@@ -1,7 +1,8 @@
 import { useLaunchParams, miniApp, useSignal } from "@telegram-apps/sdk-react";
 import { AppRoot } from "@telegram-apps/telegram-ui";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { routes } from "./navigation/routes";
+import { URLS } from "./shared/types/urls.enum";
+import { Home } from "./pages/Home";
 
 export function App() {
   const lp = useLaunchParams();
@@ -14,9 +15,7 @@ export function App() {
     >
       <BrowserRouter>
         <Routes>
-          {routes.map((route) => (
-            <Route key={route.path} {...route} />
-          ))}
+          <Route path={URLS.HOME} element={<Home />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
