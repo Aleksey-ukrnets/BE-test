@@ -17,7 +17,6 @@ export const TONConnectPage = () => {
   if (!wallet) {
     return (
       <Placeholder
-        className="absolute inset-0 w-full h-full box-border"
         header="TON Connect"
         description={
           <>
@@ -25,7 +24,9 @@ export const TONConnectPage = () => {
               To display the data related to the TON Connect, it is required to
               connect your wallet
             </Text>
-            <TonConnectButton className="ton-connect-page__button" />
+            <div className="w-full flex items-center justify-center">
+              <TonConnectButton className="mx-auto w-full" />
+            </div>
           </>
         }
       />
