@@ -1,8 +1,3 @@
-import React from 'react'
-
 export const Game = () => {
-  return (
-    <div>Game</div>
-  )
-}
-
+  return <div>Game</div>;
+};
