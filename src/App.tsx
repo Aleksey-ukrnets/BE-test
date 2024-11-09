@@ -3,7 +3,8 @@ import { AppRoot } from "@telegram-apps/telegram-ui";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { URLS } from "./shared/types/urls.enum";
 import { Home } from "./pages/Home";
-
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 export function App() {
   const lp = useLaunchParams();
   const isDark = useSignal(miniApp.isDark);
@@ -19,6 +20,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </AppRoot>
   );
 }
