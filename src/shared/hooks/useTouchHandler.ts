@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { useClickCooldownStore } from "../store/useClickCooldown";
 
@@ -37,7 +37,7 @@ const useTouchHandler = () => {
   const { clickCount, setClickCount, resetClickCount } =
     useClickCooldownStore();
 
-    const tapTimeoutRef = useRef<number | null>(null);
+  const tapTimeoutRef = useRef<number | null>(null);
 
   //дебаунс для того чтобы кадый тап не шел запрос на сервер
   const debounceTap = () => {
