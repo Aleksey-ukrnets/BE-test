@@ -36,6 +36,7 @@ export const TONConnectPage = () => {
   const {
     account: { address },
   } = wallet;
+  const truncatedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
   return (
     <List>
       {"imageUrl" in wallet && (
@@ -48,7 +49,7 @@ export const TONConnectPage = () => {
               height={60}
             />
             <Title level="3">{wallet.name}</Title>
-            <Title level="2">{address}</Title>
+            <Title level="2">{truncatedAddress}</Title>
           </Section>
           <TonConnectBtn />
         </>
