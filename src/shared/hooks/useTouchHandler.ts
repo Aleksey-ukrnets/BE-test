@@ -31,7 +31,7 @@ const useTouchHandler = () => {
     decrementCooldown,
   } = useClickCooldownStore();
 
-  const cooldownRef = useRef<NodeJS.Timeout | null>(null);
+  const cooldownRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (clickCount >= clickLimit) {
@@ -42,7 +42,7 @@ const useTouchHandler = () => {
   // TIMER COOLDOWN AFTER CLICK LIMIT
   useEffect(() => {
     if (cooldown > 0) {
-      cooldownRef.current = setInterval(() => {
+      cooldownRef.current = window.setInterval(() => {
         decrementCooldown();
       }, 1000);
     } else if (cooldown === 0 && cooldownRef.current) {
