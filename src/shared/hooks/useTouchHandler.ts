@@ -7,67 +7,52 @@ interface TouchPosition {
   y: number;
 }
 
-const clickLimit = 35;
-const mockEnergyPerTap = 10;
-const streakMultipliers: Record<number, number> = {
-  5: 2,
-  10: 3,
-  20: 5,
-};
-const mockReward = 5;
+const ENERGY_PER_TAP = 10;
+const EXP_PER_TAP = 5;
+const REWARD_PER_TAP = 5;
+const BASE_EXP_TO_LEVEl_UP = 100;
 
+const expToLevelUp = (level: number): number => {
+  const growthRate = 1.15;
+
+  if (level === 1) return BASE_EXP_TO_LEVEl_UP;
+  return Math.round(BASE_EXP_TO_LEVEl_UP * Math.pow(growthRate, level - 2));
+};
+//Эта функция эмулирует отправку данных на сервер(кол-во) кликов
+const sendTapData = (clickCount: number, setClickCount: () => void) => {
+  if (clickCount > 0) {
+    //тут отправка на сервер
+    setClickCount();
+  }
+};
 const useTouchHandler = () => {
   const [clickPositions, setClickPositions] = useState<TouchPosition[]>([]);
   const [energy, setEnergy] = useState(1000);
   const [balance, setBalance] = useState(0);
-  const [streak, setStreak] = useState(0);
+  const [exp, setExp] = useState(0);
+
   const [multiplier, setMultiplier] = useState(1);
-  const {
-    clickCount,
-    cooldown,
-    incrementClickCount,
-    resetClickCount,
-    startCooldown,
-    decrementCooldown,
-  } = useClickCooldownStore();
+  const [level, setLevel] = useState(1);
 
-  const cooldownRef = useRef<number | null>(null);
+  const { clickCount, setClickCount, resetClickCount } =
+    useClickCooldownStore();
 
-  useEffect(() => {
-    if (clickCount >= clickLimit) {
-      startCooldown();
-      toast.error("Превышено количество кликов в минуту");
+    const tapTimeoutRef = useRef<number | null>(null);
+
+  //дебаунс для того чтобы кадый тап не шел запрос на сервер
+  const debounceTap = () => {
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
     }
-  }, [clickCount, startCooldown]);
-  // TIMER COOLDOWN AFTER CLICK LIMIT
-  useEffect(() => {
-    if (cooldown > 0) {
-      cooldownRef.current = window.setInterval(() => {
-        decrementCooldown();
-      }, 1000);
-    } else if (cooldown === 0 && cooldownRef.current) {
-      clearInterval(cooldownRef.current);
-      cooldownRef.current = null;
-      resetClickCount();
-      setStreak(0);
-      setMultiplier(1);
-    }
+    tapTimeoutRef.current = window.setTimeout(() => {
+      sendTapData(clickCount, resetClickCount);
+    }, 1000);
+  };
 
-    return () => {
-      if (cooldownRef.current) {
-        clearInterval(cooldownRef.current);
-      }
-    };
-  }, [cooldown, decrementCooldown, resetClickCount]);
-  //CLICK PER POSITIONS
+  //Тапы по позиции
   const handleTouch = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (energy < mockEnergyPerTap) {
+    if (energy < ENERGY_PER_TAP) {
       toast.error("Недостаточно энергии");
-      return;
-    }
-
-    if (clickCount >= clickLimit) {
-      toast.error(`Слишком много кликов, подождите ${cooldown} секунд`);
       return;
     }
 
@@ -79,20 +64,29 @@ const useTouchHandler = () => {
       setClickPositions((prevPositions) => [...prevPositions, { x, y }]);
     }
 
-    // UPDATE MULTIPLIER
-    setStreak((prevStreak) => {
-      const newStreak = prevStreak + 1;
+    const reward = REWARD_PER_TAP * multiplier;
+    setEnergy((prev) => prev - ENERGY_PER_TAP);
+    setBalance((prev) => prev + reward);
 
-      if (streakMultipliers[newStreak]) {
-        setMultiplier(streakMultipliers[newStreak]);
+    setClickCount();
+    debounceTap();
+    //Обновление уровня и экспы
+    setExp((prevExp) => {
+      let newExp = prevExp + EXP_PER_TAP;
+      let newLevel = level;
+      let newMultiplier = multiplier;
+
+      while (newExp >= expToLevelUp(newLevel + 1)) {
+        newExp -= expToLevelUp(newLevel + 1);
+        newLevel += 1;
+        newMultiplier += 1;
       }
 
-      return newStreak;
+      setLevel(newLevel);
+      setMultiplier(newMultiplier);
+
+      return newExp;
     });
-    const reward = mockReward * multiplier;
-    setEnergy((prev) => prev - mockEnergyPerTap);
-    setBalance((prev) => prev + reward);
-    incrementClickCount();
     //CLEAR DOM
     if (clickPositions.length > 100) {
       setClickPositions([]);
@@ -104,9 +98,11 @@ const useTouchHandler = () => {
     clickPositions,
     energy,
     balance,
-    cooldown,
-    streak,
-    reward: mockReward * multiplier,
+    level,
+    multiplier,
+    expToLevelUp,
+    exp,
+    reward: REWARD_PER_TAP * multiplier,
   };
 };
 
